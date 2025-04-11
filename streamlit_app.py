@@ -8,7 +8,9 @@ import requests
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.jdsports.co.uk"
-DEFAULT_URL = "https://www.jdsports.co.uk/men/mens-footwear/brand/adidas,nike/colour/white/"
+DEFAULT_URL = (
+    "https://www.jdsports.co.uk/men/mens-footwear/brand/adidas,nike/colour/white/"
+)
 
 
 def get_product_links(listing_url):
@@ -73,7 +75,9 @@ def extract_product_info(product_url):
 
 
 st.title("JD Sports Product Scraper 🏃‍♂️👟")
-st.write("Scrape white Adidas and Nike men's shoes from JD Sports UK or any page you like!")
+st.write(
+    "Scrape white Adidas and Nike men's shoes from JD Sports UK or any page you like!"
+)
 
 url_placeholder = st.empty()
 run_button_placeholder = st.empty()
@@ -83,8 +87,13 @@ if not default_url_set:
     st.session_state["listing_url"] = DEFAULT_URL
     st.session_state["default_url_set"] = True
 
-listing_url = url_placeholder.text_input("Listing URL to scrape:", value=st.session_state["listing_url"])
+listing_url = url_placeholder.text_input(
+    "Listing URL to scrape:", value=st.session_state["listing_url"]
+)
 run_scraper = run_button_placeholder.button("Run Scraper")
+wait_time = st.slider(
+    "Delay between requests (in seconds):", min_value=1, max_value=30, value=10
+)
 
 if run_scraper:
     st.success(f"Scraping from: {listing_url}")
@@ -94,6 +103,10 @@ if run_scraper:
     progress_bar = st.progress(0)
     all_products = []
     result_table = st.empty()
+    st.markdown(
+        "<style>thead th:nth-child(1), thead th:nth-child(2) { width: 300px !important; }</style>",
+        unsafe_allow_html=True,
+    )
 
     for idx, link in enumerate(product_links):
         title, care = extract_product_info(link)
@@ -101,11 +114,16 @@ if run_scraper:
         progress_bar.progress((idx + 1) / len(product_links))
         df = pd.DataFrame(all_products, columns=["title", "care_material", "link"])
         result_table.dataframe(df)
-        time.sleep(10)  # Avoid rate limiting
+        time.sleep(wait_time)  # User-configured delay
 
     st.success("Scraping complete!")
     final_df = pd.DataFrame(all_products, columns=["title", "care_material", "link"])
     st.dataframe(final_df)
 
     csv_filename = "products.csv"
-    st.download_button("Download CSV", data=final_df.to_csv(index=False), file_name=csv_filename, mime="text/csv")
+    st.download_button(
+        "Download CSV",
+        data=final_df.to_csv(index=False),
+        file_name=csv_filename,
+        mime="text/csv",
+    )
